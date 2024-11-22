@@ -16,10 +16,6 @@ public class EntityRepository {
     private final Map<Long, Player> playerMap = new HashMap<>();
     private final Map<Long, Team> teamMap = new HashMap<>();
 
-    public Optional<Entity> find(Long id) {
-        return findPlayer(id).map(pl -> (Entity) pl).or(()->findTeam(id));
-    }
-
     public Optional<Player> findPlayer(Long id) {
         return Optional.ofNullable(playerMap.get(id));
     }

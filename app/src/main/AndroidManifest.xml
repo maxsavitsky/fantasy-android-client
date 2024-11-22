@@ -13,6 +13,9 @@
         android:theme="@style/Theme.ChGKFantasy"
         tools:targetApi="31">
         <activity
+            android:name=".ui.PickTeamActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.PickPlayerActivity"
             android:exported="false" />
         <activity

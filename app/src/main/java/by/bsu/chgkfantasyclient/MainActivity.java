@@ -23,6 +23,7 @@ import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Player;
 import by.bsu.chgkfantasyclient.entity.Team;
 import by.bsu.chgkfantasyclient.ui.PickPlayerActivity;
+import by.bsu.chgkfantasyclient.ui.PickTeamActivity;
 import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
 import by.bsu.chgkfantasyclient.widget.PickPlayerWidget;
 import by.bsu.chgkfantasyclient.widget.PickTeamWidget;
@@ -45,16 +46,12 @@ public class MainActivity extends AppCompatActivity {
                 int widgetIndex = data.getIntExtra("widget_index", 0);
                 int entityIndex = data.getIntExtra("entity_index", 0);
                 long id = data.getLongExtra("id", -1);
-                Optional<Entity> optional = EntityRepository.getInstance()
-                        .find(id);
-                if (optional.isEmpty()) {
-                    return;
-                }
+                var repository = EntityRepository.getInstance();
                 if (widgetIndex == 0) {
-                    pickTeamWidgets.get(entityIndex).setEntity((Team) optional.get());
+                    pickTeamWidgets.get(entityIndex).setEntity(repository.findTeam(id).orElseThrow());
                     sortWidgets(pickTeamWidgets);
                 } else {
-                    pickPlayerWidgets.get(entityIndex).setEntity((Player) optional.get());
+                    pickPlayerWidgets.get(entityIndex).setEntity(repository.findPlayer(id).orElseThrow());
                     sortWidgets(pickPlayerWidgets);
                 }
             }
@@ -112,8 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openPickActivity(int entityIndex, int widgetIndex) {
-        // TODO: 20.11.2024 add pick activities for player and team
-        Class<?> activityClass = PickPlayerActivity.class;
+        Class<?> activityClass = widgetIndex == 0 ? PickTeamActivity.class : PickPlayerActivity.class;
         Intent intent = new Intent(this, activityClass);
 
         long[] selectedIds = List.of(pickTeamWidgets, pickPlayerWidgets).get(widgetIndex)
