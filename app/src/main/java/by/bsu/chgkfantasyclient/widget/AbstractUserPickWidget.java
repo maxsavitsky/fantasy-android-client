@@ -73,7 +73,11 @@ public abstract class AbstractUserPickWidget<T extends Entity> extends FrameLayo
     public void swap(AbstractUserPickWidget<T> otherWidget) {
         T other = otherWidget.selectedEntity;
         otherWidget.setEntity(selectedEntity);
-        otherWidget.setEntity(other);
+        setEntity(other);
+    }
+
+    public T getSelectedEntity() {
+        return selectedEntity;
     }
 
     @DrawableRes

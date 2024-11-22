@@ -16,11 +16,15 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.entity.Entity;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Player;
 import by.bsu.chgkfantasyclient.entity.Team;
+import by.bsu.chgkfantasyclient.ui.PickPlayerActivity;
 import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
 import by.bsu.chgkfantasyclient.widget.PickPlayerWidget;
 import by.bsu.chgkfantasyclient.widget.PickTeamWidget;
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < 2; i++) {
             PickTeamWidget widget = new PickTeamWidget(this);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
             layoutParams.weight = 1;
             layoutTeams.addView(widget, layoutParams);
 
@@ -83,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 if (widget.isEntitySelected()) {
                     widget.setEntity(null);
                 } else {
-                    openPickActivity(0, finalI);
+                    openPickActivity(finalI, 0);
                 }
             });
 
@@ -92,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < 3; i++) {
             PickPlayerWidget widget = new PickPlayerWidget(this);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
             layoutParams.weight = 1;
             layoutPlayers.addView(widget, layoutParams);
 
@@ -101,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 if (widget.isEntitySelected()) {
                     widget.setEntity(null);
                 } else {
-                    openPickActivity(1, finalI);
+                    openPickActivity(finalI, 1);
                 }
             });
 
@@ -111,10 +115,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void openPickActivity(int entityIndex, int widgetIndex) {
         // TODO: 20.11.2024 add pick activities for player and team
-        Class<?> activityClass = MainActivity.class;
+        Class<?> activityClass = PickPlayerActivity.class;
         Intent intent = new Intent(this, activityClass);
+
+        long[] selectedIds = List.of(pickTeamWidgets, pickPlayerWidgets).get(widgetIndex)
+                .stream()
+                .filter(AbstractUserPickWidget::isEntitySelected)
+                .map(w -> w.getSelectedEntity().getId())
+                .flatMapToLong(LongStream::of)
+                .toArray();
         intent.putExtra("widget_index", widgetIndex)
-                .putExtra("entity_index", entityIndex);
+                .putExtra("entity_index", entityIndex)
+                .putExtra("selected_ids", selectedIds);
         pickEntityResultLauncher.launch(intent);
     }
 

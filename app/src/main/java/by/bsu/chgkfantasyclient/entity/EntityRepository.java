@@ -1,8 +1,11 @@
 package by.bsu.chgkfantasyclient.entity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 
@@ -32,6 +35,14 @@ public class EntityRepository {
 
     public void addTeam(Team team) {
         teamMap.put(team.getId(), team);
+    }
+
+    public List<Player> getPlayers() {
+        return new ArrayList<>(playerMap.values());
+    }
+
+    public List<Team> getTeams() {
+        return new ArrayList<>(teamMap.values());
     }
 
 }
