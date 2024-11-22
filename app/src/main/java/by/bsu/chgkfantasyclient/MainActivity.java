@@ -15,7 +15,13 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import by.bsu.chgkfantasyclient.entity.Entity;
+import by.bsu.chgkfantasyclient.entity.EntityRepository;
+import by.bsu.chgkfantasyclient.entity.Player;
+import by.bsu.chgkfantasyclient.entity.Team;
+import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
 import by.bsu.chgkfantasyclient.widget.PickPlayerWidget;
 import by.bsu.chgkfantasyclient.widget.PickTeamWidget;
 
@@ -37,11 +43,18 @@ public class MainActivity extends AppCompatActivity {
                 int widgetIndex = data.getIntExtra("widget_index", 0);
                 int entityIndex = data.getIntExtra("entity_index", 0);
                 long id = data.getLongExtra("id", -1);
-                // TODO: 20.11.2024 retrieve player object
-                /*List.of(pickTeamWidgets, pickPlayerWidgets)
-                        .get(entityIndex)
-                        .get(widgetIndex)
-                        .setEntity();*/
+                Optional<Entity> optional = EntityRepository.getInstance()
+                        .find(id);
+                if (optional.isEmpty()) {
+                    return;
+                }
+                if (widgetIndex == 0) {
+                    pickTeamWidgets.get(entityIndex).setEntity((Team) optional.get());
+                    sortWidgets(pickTeamWidgets);
+                } else {
+                    pickPlayerWidgets.get(entityIndex).setEntity((Player) optional.get());
+                    sortWidgets(pickPlayerWidgets);
+                }
             }
     );
 
@@ -103,6 +116,14 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("widget_index", widgetIndex)
                 .putExtra("entity_index", entityIndex);
         pickEntityResultLauncher.launch(intent);
+    }
+
+    private <E extends Entity, T extends AbstractUserPickWidget<E>> void sortWidgets(List<T> widgets) {
+        for (int i = 0; i < widgets.size() - 1; i++) {
+            if (!widgets.get(i).isEntitySelected() && widgets.get(i + 1).isEntitySelected()) {
+                widgets.get(i).swap(widgets.get(i + 1));
+            }
+        }
     }
 
 }
