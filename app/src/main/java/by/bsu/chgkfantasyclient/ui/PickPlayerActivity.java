@@ -7,9 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import java.util.List;
-
-import by.bsu.chgkfantasyclient.entity.Entity;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Player;
 

@@ -14,7 +14,9 @@ import java.util.Locale;
 
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.Entity;
+import lombok.Getter;
 
+@Getter
 public abstract class AbstractUserPickWidget<T extends Entity> extends FrameLayout {
 
     private T selectedEntity;
@@ -74,10 +76,6 @@ public abstract class AbstractUserPickWidget<T extends Entity> extends FrameLayo
         T other = otherWidget.selectedEntity;
         otherWidget.setEntity(selectedEntity);
         setEntity(other);
-    }
-
-    public T getSelectedEntity() {
-        return selectedEntity;
     }
 
     @DrawableRes
