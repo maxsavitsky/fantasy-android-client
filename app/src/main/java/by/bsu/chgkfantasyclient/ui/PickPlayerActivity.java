@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Player;
 
@@ -15,6 +16,8 @@ public class PickPlayerActivity extends AbstractPickEntityActivity<Player, PickP
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setTitle(R.string.pick_player_title);
 
         onEntitiesRetrieved(EntityRepository.getInstance().getPlayers());
     }

@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">ЧГК Фантазия</string>
     <string name="search_label">Поиск…</string>
+    <string name="pick_player_title">Выбрать игрока</string>
+    <string name="pick_team_title">Выбрать команду</string>
 </resources>

@@ -22,6 +22,8 @@ public class PickTeamActivity extends AbstractPickEntityActivity<Team, PickTeamA
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setTitle(R.string.pick_team_title);
+
         onEntitiesRetrieved(EntityRepository.getInstance().getTeams());
     }
 
