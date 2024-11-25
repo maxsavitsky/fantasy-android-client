@@ -4,4 +4,5 @@
     <string name="search_label">Поиск…</string>
     <string name="pick_player_title">Выбрать игрока</string>
     <string name="pick_team_title">Выбрать команду</string>
+    <string name="search_hint">Поиск по имени…</string>
 </resources>

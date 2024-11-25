@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -22,12 +23,15 @@ import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.Entity;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 
 public abstract class AbstractPickEntityActivity<T extends Entity, VH extends AbstractPickEntityActivity.DataAdapter.ViewHolder> extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private SearchView searchView;
     private List<T> sourceEntitiesList;
+    private DataAdapter<VH, T> adapter;
 
     private final DataAdapter.Callback<T> adapterCallback = (position, entity) -> {
         Intent sourceData = getIntent();
@@ -62,6 +66,31 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         searchView.setEnabled(false);
         recyclerView.setVisibility(View.GONE);
         findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    adapter.update(sourceEntitiesList);
+                    return true;
+                }
+                List<BoundExtractedResult<T>> list = FuzzySearch.extractTop(
+                        newText,
+                        sourceEntitiesList,
+                        Entity::getName,
+                        20, 80
+                );
+                adapter.update(list.stream()
+                        .map(BoundExtractedResult::getReferent)
+                        .collect(Collectors.toList()));
+                return true;
+            }
+        });
     }
 
     protected void onEntitiesRetrieved(List<T> entities) {
@@ -82,7 +111,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        var adapter = getAdapter(adapterCallback);
+        adapter = getAdapter(adapterCallback);
         recyclerView.setAdapter(adapter);
 
         adapter.update(sourceEntitiesList);
@@ -164,7 +193,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
 
         }
 
-        public interface Callback <T extends Entity> {
+        public interface Callback<T extends Entity> {
             void onEntityClicked(int position, T entity);
         }
 

@@ -3,4 +3,5 @@
     <string name="search_label">Search…</string>
     <string name="pick_player_title">Pick player</string>
     <string name="pick_team_title">Pick team</string>
+    <string name="search_hint">Search by name…</string>
 </resources>
