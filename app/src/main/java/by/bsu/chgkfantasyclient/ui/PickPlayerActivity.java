@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Player;
@@ -18,8 +21,21 @@ public class PickPlayerActivity extends AbstractPickEntityActivity<Player, PickP
         super.onCreate(savedInstanceState);
 
         setTitle(R.string.pick_player_title);
+    }
 
-        onEntitiesRetrieved(EntityRepository.getInstance().getPlayers());
+    @Override
+    protected String getUrlPath() {
+        return "/players";
+    }
+
+    @Override
+    protected Player parseFromJSON(JSONObject jsonObject) throws JSONException {
+        return Player.fromJSON(jsonObject);
+    }
+
+    @Override
+    protected void putIntoRepository(Player entity) {
+        EntityRepository.getInstance().addPlayer(entity);
     }
 
     @Override

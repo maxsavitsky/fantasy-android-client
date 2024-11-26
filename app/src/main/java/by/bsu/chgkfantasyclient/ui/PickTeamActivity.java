@@ -12,6 +12,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Team;
@@ -23,8 +26,21 @@ public class PickTeamActivity extends AbstractPickEntityActivity<Team, PickTeamA
         super.onCreate(savedInstanceState);
 
         setTitle(R.string.pick_team_title);
+    }
 
-        onEntitiesRetrieved(EntityRepository.getInstance().getTeams());
+    @Override
+    protected String getUrlPath() {
+        return "/teams";
+    }
+
+    @Override
+    protected Team parseFromJSON(JSONObject jsonObject) throws JSONException {
+        return Team.fromJSON(jsonObject);
+    }
+
+    @Override
+    protected void putIntoRepository(Team entity) {
+        EntityRepository.getInstance().addTeam(entity);
     }
 
     @Override

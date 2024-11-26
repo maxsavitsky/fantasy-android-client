@@ -15,23 +15,37 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOError;
+import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.entity.Entity;
+import lombok.SneakyThrows;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public abstract class AbstractPickEntityActivity<T extends Entity, VH extends AbstractPickEntityActivity.DataAdapter.ViewHolder> extends AppCompatActivity {
 
+    protected static final String API_HOST = "http://10.0.2.2:8080";
     private RecyclerView recyclerView;
     private SearchView searchView;
     private List<T> sourceEntitiesList;
     private DataAdapter<VH, T> adapter;
+    protected final OkHttpClient httpClient = new OkHttpClient();
 
     private final DataAdapter.Callback<T> adapterCallback = (position, entity) -> {
         Intent sourceData = getIntent();
@@ -91,6 +105,8 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
                 return true;
             }
         });
+
+        new Thread(this::fetchData).start();
     }
 
     protected void onEntitiesRetrieved(List<T> entities) {
@@ -117,7 +133,53 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         adapter.update(sourceEntitiesList);
     }
 
+    protected void fetchData() {
+        String url = API_HOST + getUrlPath();
+        Request request = new Request.Builder()
+                .get()
+                .url(url)
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() != 200) {
+                showError("Wrong error code: " + response.code());
+                return;
+            }
+            if (response.body() == null) {
+                showError("Nothing returned");
+                return;
+            }
+            JSONArray jsonArray = new JSONArray(response.body().string());
+            List<T> list = new ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                T entity = parseFromJSON(jsonArray.getJSONObject(i));
+                list.add(entity);
+                putIntoRepository(entity);
+            }
+            runOnUiThread(()->onEntitiesRetrieved(list));
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            showError(e.toString());
+        }
+    }
+
+    private void showError(String errorText) {
+        runOnUiThread(()->{
+            TextView textView = findViewById(R.id.text_view_error_message);
+            textView.setText(getString(R.string.fetch_error_message, errorText));
+            textView.setVisibility(View.VISIBLE);
+            findViewById(R.id.progressBar).setVisibility(View.GONE);
+        });
+    }
+
     protected abstract DataAdapter<VH, T> getAdapter(DataAdapter.Callback<T> callback);
+
+    protected abstract String getUrlPath();
+
+    protected abstract T parseFromJSON(JSONObject jsonObject) throws JSONException;
+
+    protected void putIntoRepository(T entity) {
+
+    }
 
     protected abstract static class DataAdapter<VH extends DataAdapter.ViewHolder, T extends Entity> extends RecyclerView.Adapter<VH> {
 

@@ -4,4 +4,5 @@
     <string name="pick_player_title">Pick player</string>
     <string name="pick_team_title">Pick team</string>
     <string name="search_hint">Search by name…</string>
+    <string name="fetch_error_message">Error:\n%1$s</string>
 </resources>

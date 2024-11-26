@@ -42,6 +42,9 @@ dependencies {
 
     implementation libs.fuzzymatcher
 
+    implementation libs.json
+    implementation libs.okhttp
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
