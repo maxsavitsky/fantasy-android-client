@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.R;
+import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.Entity;
 import lombok.SneakyThrows;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
@@ -46,6 +47,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
     private List<T> sourceEntitiesList;
     private DataAdapter<VH, T> adapter;
     protected final OkHttpClient httpClient = new OkHttpClient();
+    protected final ApiService apiService = ApiService.getInstance();
 
     private final DataAdapter.Callback<T> adapterCallback = (position, entity) -> {
         Intent sourceData = getIntent();
@@ -134,10 +136,8 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
     }
 
     protected void fetchData() {
-        String url = API_HOST + getUrlPath();
-        Request request = new Request.Builder()
+        Request request = apiService.createRequest(getUrlPath())
                 .get()
-                .url(url)
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.code() != 200) {

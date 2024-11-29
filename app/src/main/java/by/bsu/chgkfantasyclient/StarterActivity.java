@@ -1,13 +1,19 @@
 package by.bsu.chgkfantasyclient;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
 
-import by.bsu.chgkfantasyclient.entity.EntityRepository;
-import by.bsu.chgkfantasyclient.entity.Player;
-import by.bsu.chgkfantasyclient.entity.Team;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
+import by.bsu.chgkfantasyclient.api.ApiService;
+import by.bsu.chgkfantasyclient.entity.User;
 
 public class StarterActivity extends AppCompatActivity {
 
@@ -26,8 +32,45 @@ public class StarterActivity extends AppCompatActivity {
         EntityRepository.getInstance().addTeam(new Team(3, "team3", 0, 50));
         EntityRepository.getInstance().addTeam(new Team(4, "team4", 0, 0));
 */
-        // в будущем здесь будет проверка на авторизацию пользователя
+        new Thread(this::checkSession).start();
+    }
+
+    private void checkSession() {
+        String sessionKey;
+        try {
+            sessionKey = getSessionKey();
+        } catch (GeneralSecurityException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (sessionKey == null) {
+            openLoginActivity();
+            return;
+        }
+
+        User user = ApiService.getInstance().authenticate(sessionKey);
+        if (user == null) {
+            openLoginActivity();
+            return;
+        }
+
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
+
+    private void openLoginActivity() {
+        Toast.makeText(this, "open login", Toast.LENGTH_SHORT).show();
+    }
+
+    private String getSessionKey() throws GeneralSecurityException, IOException {
+        var masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+        SharedPreferences prefs = EncryptedSharedPreferences.create(
+                "prefs",
+                masterKeyAlias,
+                this,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        );
+        return prefs.getString("session_id", null);
+    }
+
 }
