@@ -16,6 +16,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:exported="false" />
+        <activity
             android:name=".ui.PickTeamActivity"
             android:exported="false" />
         <activity

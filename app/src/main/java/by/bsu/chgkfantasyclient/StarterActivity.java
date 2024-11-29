@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKeys;
@@ -14,8 +16,28 @@ import java.security.GeneralSecurityException;
 
 import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.User;
+import by.bsu.chgkfantasyclient.ui.LoginActivity;
 
 public class StarterActivity extends AppCompatActivity {
+
+    private final ActivityResultLauncher<Intent> loginActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() != RESULT_OK) {
+                    // just exit, idk
+                    finish();
+                    return;
+                }
+                try {
+                    SharedPreferences pref = getEncryptedPrefs();
+                    pref.edit().putString("session_key", ApiService.getInstance().getSessionKey()).commit();
+                } catch (GeneralSecurityException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                openMainActivity();
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,24 +75,33 @@ public class StarterActivity extends AppCompatActivity {
             return;
         }
 
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        openMainActivity();
     }
 
     private void openLoginActivity() {
-        Toast.makeText(this, "open login", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, LoginActivity.class);
+        loginActivityResultLauncher.launch(intent);
+    }
+
+    private void openMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private String getSessionKey() throws GeneralSecurityException, IOException {
+        return getEncryptedPrefs().getString("session_key", null);
+    }
+
+    private SharedPreferences getEncryptedPrefs() throws GeneralSecurityException, IOException {
         var masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-        SharedPreferences prefs = EncryptedSharedPreferences.create(
+        return EncryptedSharedPreferences.create(
                 "prefs",
                 masterKeyAlias,
                 this,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         );
-        return prefs.getString("session_id", null);
     }
 
 }

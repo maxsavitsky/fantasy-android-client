@@ -19,20 +19,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOError;
 import java.io.IOException;
-import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.Entity;
-import lombok.SneakyThrows;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 import okhttp3.OkHttpClient;
@@ -136,7 +132,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
     }
 
     protected void fetchData() {
-        Request request = apiService.createRequest(getUrlPath())
+        Request request = apiService.createAuthenticatedRequest(getUrlPath())
                 .get()
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
