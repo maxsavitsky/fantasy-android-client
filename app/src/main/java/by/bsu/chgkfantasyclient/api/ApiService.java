@@ -1,11 +1,16 @@
 package by.bsu.chgkfantasyclient.api;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import by.bsu.chgkfantasyclient.R;
+import by.bsu.chgkfantasyclient.entity.Pick;
+import by.bsu.chgkfantasyclient.entity.Player;
+import by.bsu.chgkfantasyclient.entity.Team;
 import by.bsu.chgkfantasyclient.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,10 +48,16 @@ public class ApiService {
                 return null;
             }
             JSONObject jsonObject = new JSONObject(response.body().string());
+            JSONArray jsonArray = jsonObject.getJSONArray("pick_ids");
+            ArrayList<Long> pick_ids = new ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                pick_ids.add(jsonArray.getLong(i));
+            }
             currentUser = new User(
                     jsonObject.getLong("id"),
                     jsonObject.getString("username"),
-                    jsonObject.getString("name")
+                    jsonObject.getString("name"),
+                    pick_ids
             );
             sessionKey = sessionId;
             return currentUser;
@@ -74,10 +85,16 @@ public class ApiService {
                 }
                 sessionKey = response.header(response.header("x-csrf-token", "_csrf"));
                 JSONObject userJson = new JSONObject(response.body().string());
+                JSONArray jsonArray = userJson.getJSONArray("pick_ids");
+                ArrayList<Long> pick_ids = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    pick_ids.add(jsonArray.getLong(i));
+                }
                 currentUser = new User(
                         userJson.getLong("id"),
                         userJson.getString("username"),
-                        userJson.getString("name")
+                        userJson.getString("name"),
+                        pick_ids
                 );
                 return new LoginResult(currentUser);
             }
@@ -91,6 +108,73 @@ public class ApiService {
                 .header("x-csrf-token", "_csrf")
                 .header("_csrf", sessionKey)
                 .url(API_HOST + path);
+    }
+
+    public User updateUser() {
+        long id = currentUser.getId();
+        Request request = createAuthenticatedRequest("/user/" + id)
+                .get()
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                JSONObject userJson = new JSONObject(response.body().string());
+                JSONArray jsonArray = userJson.getJSONArray("pick_ids");
+                ArrayList<Long> pick_ids = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    pick_ids.add(jsonArray.getLong(i));
+                }
+                currentUser = new User(
+                        userJson.getLong("id"),
+                        userJson.getString("username"),
+                        userJson.getString("name"),
+                        pick_ids
+                );
+            }
+        } catch (IOException | JSONException ignored) {
+            //TODO handle
+        }
+        return currentUser;
+    }
+
+    public Pick updatePick() {
+        long id = currentUser.getPick_ids().get(0);
+        Request request = createAuthenticatedRequest("/pick/" + id)
+                .get()
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                JSONObject pickJson = new JSONObject(response.body().string());
+                JSONArray playersJSON = pickJson.getJSONArray("players");
+                ArrayList<Player> players = new ArrayList<>();
+                for (int i = 0; i < playersJSON.length(); i++) {
+                    players.add(Player.fromJSON(playersJSON.getJSONObject(i)));
+                }
+                JSONArray teamsJSON = pickJson.getJSONArray("teams");
+                ArrayList<Team> teams = new ArrayList<>();
+                for (int i = 0; i < teamsJSON.length(); i++) {
+                    teams.add(Team.fromJSON(teamsJSON.getJSONObject(i)));
+                }
+                return new Pick(
+                        pickJson.getLong("id"),
+                        pickJson.getDouble("balance"),
+                        pickJson.getInt("points"),
+                        players,
+                        teams,
+                        pickJson.getLong("user_id")
+                );
+            }
+        } catch (IOException | JSONException ignored) {
+            //TODO handle
+        }
+        //TODO idk fix this shit somehow
+        return new Pick(
+                0L,
+                10.0,
+                0,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                0L
+        );
     }
 
     @Getter
@@ -129,5 +213,4 @@ public class ApiService {
         }
 
     }
-
 }

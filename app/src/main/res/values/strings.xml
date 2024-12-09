@@ -11,4 +11,5 @@
     <string name="action_sign_in_short">Sign in</string>
     <string name="bad_credentials">Bad credentials</string>
     <string name="login_error">Error on server-side occurred</string>
+    <string name="balance">Balance: </string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -221,7 +222,9 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
 
             holder.nameTextView.setText(entity.getName());
             holder.priceTextView.setText(String.format(Locale.ROOT, "%d$", entity.getPrice()));
-            holder.pointsTextView.setText(String.format(Locale.ROOT, "%d", entity.getPoints()));
+            holder.pointsTextView.setText(String.format(Locale.ROOT, "%d pts", entity.getPoints()));
+            //TODO: red or green depending on whether it is affordable or not
+            //holder.pointsTextView.setBackgroundColor();
 
             holder.itemView.setOnClickListener(v -> callback.onEntityClicked(position, entity));
         }

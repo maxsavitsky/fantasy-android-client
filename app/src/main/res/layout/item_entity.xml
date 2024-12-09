@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:padding="4dp"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:padding="4dp">
 
     <ImageView
         android:id="@+id/item_entity_image"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="35dp"
+        android:layout_height="33dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -19,42 +19,47 @@
 
     <TextView
         android:id="@+id/item_entity_name"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="230dp"
+        android:layout_height="33dp"
+        android:fontFamily="@font/alegreya_sans_medium"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/linearLayout"
         app:layout_constraintStart_toEndOf="@+id/item_entity_image"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="40dp"
+    <TextView
+        android:id="@+id/item_entity_points"
+        android:layout_width="63dp"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:fontFamily="@font/alegreya_sans_medium"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/item_entity_price"
+        app:layout_constraintStart_toEndOf="@+id/item_entity_name"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="points" />
+
+    <TextView
+        android:id="@+id/item_entity_price"
+        android:layout_width="54dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="2"
+        android:background="@color/background_green"
+        android:fontFamily="@font/alegreya_sans_medium"
+        android:textAlignment="center"
+        android:textColor="@color/green"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/item_entity_price"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="10sp"
-            android:textColor="@color/green"
-            tools:text="price"/>
-
-        <TextView
-            android:id="@+id/item_entity_points"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="10sp"
-            android:textColor="@color/green"
-            tools:text="points"/>
-
-    </LinearLayout>
+        app:layout_constraintStart_toEndOf="@+id/item_entity_points"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        tools:text="price" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

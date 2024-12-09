@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ЧГК Фантазия</string>
+    <string name="app_name">ЧГК Фэнтези</string>
     <string name="search_label">Поиск…</string>
     <string name="pick_player_title">Выбрать игрока</string>
     <string name="pick_team_title">Выбрать команду</string>
+    <string name="balance">Баланс:</string>
     <string name="search_hint">Поиск по имени…</string>
     <string name="fetch_error_message">Ошибка:\n%1$s</string>
+    <string name="title_activity_login">Логин</string>
+    <string name="prompt_username">Имя пользователя</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in_short">Войти</string>
+    <string name="bad_credentials">Неверные данные</string>
+    <string name="login_error">Возникла ошибка сервера</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,13 +16,17 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.LongStream;
 
+import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.Entity;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
+import by.bsu.chgkfantasyclient.entity.Pick;
 import by.bsu.chgkfantasyclient.entity.Player;
 import by.bsu.chgkfantasyclient.entity.Team;
+import by.bsu.chgkfantasyclient.entity.User;
 import by.bsu.chgkfantasyclient.ui.PickPlayerActivity;
 import by.bsu.chgkfantasyclient.ui.PickTeamActivity;
 import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
@@ -32,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
 
     private final List<PickTeamWidget> pickTeamWidgets = new ArrayList<>();
     private final List<PickPlayerWidget> pickPlayerWidgets = new ArrayList<>();
+
+    private Pick activePick;
+
+    private final ApiService apiService = ApiService.getInstance();
 
     private final ActivityResultLauncher<Intent> pickEntityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -106,6 +115,17 @@ public class MainActivity extends AppCompatActivity {
 
             pickPlayerWidgets.add(widget);
         }
+
+        new Thread(
+                () -> {
+                    activePick = apiService.updatePick();
+                    TextView balanceTextView = findViewById(R.id.balanceTextView);
+                    balanceTextView.setText(String.format(Locale.ROOT, "%s $d", balanceTextView.getText(), activePick.getBalance()));
+
+                    TextView nameTextView = findViewById(R.id.usernameTextView);
+                    nameTextView.setText(apiService.getCurrentUser().getName());
+                }
+        ).start();
     }
 
     private void openPickActivity(int entityIndex, int widgetIndex) {
@@ -120,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
                 .toArray();
         intent.putExtra("widget_index", widgetIndex)
                 .putExtra("entity_index", entityIndex)
-                .putExtra("selected_ids", selectedIds);
+                .putExtra("selected_ids", selectedIds)
+                .putExtra("balance", activePick.getBalance());
         pickEntityResultLauncher.launch(intent);
     }
 
