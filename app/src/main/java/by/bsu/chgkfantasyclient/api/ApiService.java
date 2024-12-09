@@ -12,9 +12,7 @@ import by.bsu.chgkfantasyclient.entity.Pick;
 import by.bsu.chgkfantasyclient.entity.Player;
 import by.bsu.chgkfantasyclient.entity.Team;
 import by.bsu.chgkfantasyclient.entity.User;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -137,7 +135,7 @@ public class ApiService {
     }
 
     public Pick updatePick() {
-        long id = currentUser.getPick_ids().get(0);
+        long id = currentUser.getPickIds().get(0);
         Request request = createAuthenticatedRequest("/pick/" + id)
                 .get()
                 .build();

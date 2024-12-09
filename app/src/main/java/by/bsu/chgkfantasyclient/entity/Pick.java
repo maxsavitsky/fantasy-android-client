@@ -15,5 +15,5 @@ public class Pick {
     private Integer points;
     private List<Player> players;
     private List<Team> teams;
-    private Long user_id;
+    private Long userId;
 }

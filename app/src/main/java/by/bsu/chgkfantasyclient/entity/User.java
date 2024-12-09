@@ -10,5 +10,5 @@ public class User {
     private final long id;
     private final String username;
     private final String name;
-    private final ArrayList<Long> pick_ids;
+    private final ArrayList<Long> pickIds;
 }
