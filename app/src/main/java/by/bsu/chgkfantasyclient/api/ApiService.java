@@ -134,45 +134,38 @@ public class ApiService {
         return currentUser;
     }
 
-    public Pick updatePick() {
+    public Pick getUserCurrentPick() {
         long id = currentUser.getPickIds().get(0);
         Request request = createAuthenticatedRequest("/pick/" + id)
                 .get()
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                JSONObject pickJson = new JSONObject(response.body().string());
-                JSONArray playersJSON = pickJson.getJSONArray("players");
-                ArrayList<Player> players = new ArrayList<>();
-                for (int i = 0; i < playersJSON.length(); i++) {
-                    players.add(Player.fromJSON(playersJSON.getJSONObject(i)));
-                }
-                JSONArray teamsJSON = pickJson.getJSONArray("teams");
-                ArrayList<Team> teams = new ArrayList<>();
-                for (int i = 0; i < teamsJSON.length(); i++) {
-                    teams.add(Team.fromJSON(teamsJSON.getJSONObject(i)));
-                }
-                return new Pick(
-                        pickJson.getLong("id"),
-                        pickJson.getDouble("balance"),
-                        pickJson.getInt("points"),
-                        players,
-                        teams,
-                        pickJson.getLong("user_id")
-                );
+            if (response.code() != 200) {
+                return null;
             }
-        } catch (IOException | JSONException ignored) {
-            //TODO handle
+            JSONObject pickJson = new JSONObject(response.body().string());
+            JSONArray playersJSON = pickJson.getJSONArray("players");
+            ArrayList<Player> players = new ArrayList<>();
+            for (int i = 0; i < playersJSON.length(); i++) {
+                players.add(Player.fromJSON(playersJSON.getJSONObject(i)));
+            }
+            JSONArray teamsJSON = pickJson.getJSONArray("teams");
+            ArrayList<Team> teams = new ArrayList<>();
+            for (int i = 0; i < teamsJSON.length(); i++) {
+                teams.add(Team.fromJSON(teamsJSON.getJSONObject(i)));
+            }
+            return new Pick(
+                    pickJson.getLong("id"),
+                    pickJson.getDouble("balance"),
+                    pickJson.getInt("points"),
+                    players,
+                    teams,
+                    pickJson.getLong("user_id")
+            );
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            return null;
         }
-        //TODO idk fix this shit somehow
-        return new Pick(
-                0L,
-                10.0,
-                0,
-                new ArrayList<>(),
-                new ArrayList<>(),
-                0L
-        );
     }
 
     @Getter

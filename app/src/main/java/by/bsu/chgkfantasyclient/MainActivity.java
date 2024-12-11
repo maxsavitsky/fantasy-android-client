@@ -17,16 +17,12 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.LongStream;
 
 import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.Entity;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Pick;
-import by.bsu.chgkfantasyclient.entity.Player;
-import by.bsu.chgkfantasyclient.entity.Team;
-import by.bsu.chgkfantasyclient.entity.User;
 import by.bsu.chgkfantasyclient.ui.PickPlayerActivity;
 import by.bsu.chgkfantasyclient.ui.PickTeamActivity;
 import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
@@ -118,12 +114,15 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(
                 () -> {
-                    activePick = apiService.updatePick();
-                    TextView balanceTextView = findViewById(R.id.balanceTextView);
-                    balanceTextView.setText(String.format(Locale.ROOT, "%s $d", balanceTextView.getText(), activePick.getBalance()));
+                    activePick = apiService.getUserCurrentPick();
 
-                    TextView nameTextView = findViewById(R.id.usernameTextView);
-                    nameTextView.setText(apiService.getCurrentUser().getName());
+                    runOnUiThread(()->{
+                        TextView balanceTextView = findViewById(R.id.balanceTextView);
+                        balanceTextView.setText(String.format(Locale.ROOT, "%s %.2f", balanceTextView.getText(), activePick.getBalance()));
+
+                        TextView nameTextView = findViewById(R.id.usernameTextView);
+                        nameTextView.setText(apiService.getCurrentUser().getName());
+                    });
                 }
         ).start();
     }
