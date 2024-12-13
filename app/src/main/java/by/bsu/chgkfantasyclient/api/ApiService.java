@@ -170,6 +170,66 @@ public class ApiService {
         }
     }
 
+    public ApiCallResult<Void> addPlayerToPick(long pickId, long playerId) {
+        Request request = createAuthenticatedRequest("/pick/" + pickId + "/addPlayer/" + playerId)
+                .put(RequestBody.create(new byte[0], null))
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return ApiCallResult.success(null);
+            }
+            return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiCallResult.error(e.getMessage());
+        }
+    }
+
+    public ApiCallResult<Void> addTeamToPick(long pickId, long teamId) {
+        Request request = createAuthenticatedRequest("/pick/" + pickId + "/addTeam/" + teamId)
+                .put(RequestBody.create(new byte[0], null))
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return ApiCallResult.success(null);
+            }
+            return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiCallResult.error(e.getMessage());
+        }
+    }
+
+    public ApiCallResult<Void> removePlayerFromPick(long pickId, long playerId) {
+        Request request = createAuthenticatedRequest("/pick/" + pickId + "/removePlayer/" + playerId)
+                .delete()
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return ApiCallResult.success(null);
+            }
+            return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiCallResult.error(e.getMessage());
+        }
+    }
+
+    public ApiCallResult<Void> removeTeamFromPick(long pickId, long teamId) {
+        Request request = createAuthenticatedRequest("/pick/" + pickId + "/removeTeam/" + teamId)
+                .delete()
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return ApiCallResult.success(null);
+            }
+            return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiCallResult.error(e.getMessage());
+        }
+    }
+
     @Getter
     public static class ApiCallResult<T> {
 

@@ -24,6 +24,8 @@ import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.Entity;
 import by.bsu.chgkfantasyclient.entity.EntityRepository;
 import by.bsu.chgkfantasyclient.entity.Pick;
+import by.bsu.chgkfantasyclient.entity.Player;
+import by.bsu.chgkfantasyclient.entity.Team;
 import by.bsu.chgkfantasyclient.ui.PickPlayerActivity;
 import by.bsu.chgkfantasyclient.ui.PickTeamActivity;
 import by.bsu.chgkfantasyclient.widget.AbstractUserPickWidget;
@@ -54,12 +56,23 @@ public class MainActivity extends AppCompatActivity {
                 long id = data.getLongExtra("id", -1);
                 var repository = EntityRepository.getInstance();
                 if (widgetIndex == 0) {
-                    pickTeamWidgets.get(entityIndex).setEntity(repository.findTeam(id).orElseThrow());
+                    Team team = repository.findTeam(id).orElseThrow();
+                    activePick.addTeam(team);
+
+                    pickTeamWidgets.get(entityIndex).setEntity(team);
                     sortWidgets(pickTeamWidgets);
+
+                    new Thread(()->apiService.addTeamToPick(activePick.getId(), id)).start();
                 } else {
-                    pickPlayerWidgets.get(entityIndex).setEntity(repository.findPlayer(id).orElseThrow());
+                    Player player = repository.findPlayer(id).orElseThrow();
+                    activePick.addPlayer(player);
+
+                    pickPlayerWidgets.get(entityIndex).setEntity(player);
                     sortWidgets(pickPlayerWidgets);
+
+                    new Thread(()->apiService.addPlayerToPick(activePick.getId(), id)).start();
                 }
+                updateBalanceTextView();
             }
     );
 
@@ -86,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
             int finalI = i;
             widget.setOnClickListener(v -> {
                 if (widget.isEntitySelected()) {
+                    removeTeam(widget.getSelectedEntity());
                     widget.setEntity(null);
+                    sortWidgets(pickTeamWidgets);
                 } else {
                     openPickActivity(finalI, 0);
                 }
@@ -104,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
             int finalI = i;
             widget.setOnClickListener(v -> {
                 if (widget.isEntitySelected()) {
+                    removePlayer(widget.getSelectedEntity());
                     widget.setEntity(null);
+                    sortWidgets(pickPlayerWidgets);
                 } else {
                     openPickActivity(finalI, 1);
                 }
@@ -122,15 +139,49 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(this, callResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
                         } else {
                             activePick = callResult.getResult();
-                            TextView balanceTextView = findViewById(R.id.balanceTextView);
-                            balanceTextView.setText(String.format(Locale.ROOT, "%s %.2f", balanceTextView.getText(), activePick.getBalance()));
+
+                            updateBalanceTextView();
 
                             TextView nameTextView = findViewById(R.id.usernameTextView);
                             nameTextView.setText(apiService.getCurrentUser().getName());
+
+                            for (int i = 0; i < activePick.getPlayers().size(); i++) {
+                                pickPlayerWidgets.get(i).setEntity(activePick.getPlayers().get(i));
+                            }
+                            for (int i = 0; i < activePick.getTeams().size(); i++) {
+                                pickTeamWidgets.get(i).setEntity(activePick.getTeams().get(i));
+                            }
                         }
                     });
                 }
         ).start();
+    }
+
+    private void removePlayer(Player player) {
+        activePick.removePlayer(player);
+        updateBalanceTextView();
+        new Thread(()->{
+            var result = apiService.removePlayerFromPick(activePick.getId(), player.getId());
+            if (result.isError()) {
+                runOnUiThread(()-> Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    private void removeTeam(Team team) {
+        activePick.removeTeam(team);
+        updateBalanceTextView();
+        new Thread(()->{
+            var result = apiService.removeTeamFromPick(activePick.getId(), team.getId());
+            if (result.isError()) {
+                runOnUiThread(()-> Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    private void updateBalanceTextView() {
+        TextView balanceTextView = findViewById(R.id.balanceTextView);
+        balanceTextView.setText(String.format(Locale.ROOT, "Balance: %.2f", activePick.getBalance()));
     }
 
     private void openPickActivity(int entityIndex, int widgetIndex) {
