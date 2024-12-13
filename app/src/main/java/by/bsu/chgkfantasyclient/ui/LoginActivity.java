@@ -76,10 +76,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void authenticate(String username, String password) {
-        ApiService.LoginResult result = ApiService.getInstance()
+        ApiService.ApiCallResult<User> result = ApiService.getInstance()
                 .login(username, password);
-        if (result.getStatus() != ApiService.LoginResult.Status.SUCCESS) {
-            showError(getString(result.getStatus().getErrorStringId()));
+        if (result.isError()) {
+            showError(getString(result.getError().getCode() == 401 ? R.string.bad_credentials : R.string.login_error));
             return;
         }
         setResult(RESULT_OK);

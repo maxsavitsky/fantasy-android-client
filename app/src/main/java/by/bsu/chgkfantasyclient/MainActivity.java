@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -114,14 +115,19 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(
                 () -> {
-                    activePick = apiService.getUserCurrentPick();
+                    ApiService.ApiCallResult<Pick> callResult = apiService.getUserCurrentPick();
 
                     runOnUiThread(()->{
-                        TextView balanceTextView = findViewById(R.id.balanceTextView);
-                        balanceTextView.setText(String.format(Locale.ROOT, "%s %.2f", balanceTextView.getText(), activePick.getBalance()));
+                        if (callResult.isError()) {
+                            Toast.makeText(this, callResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            activePick = callResult.getResult();
+                            TextView balanceTextView = findViewById(R.id.balanceTextView);
+                            balanceTextView.setText(String.format(Locale.ROOT, "%s %.2f", balanceTextView.getText(), activePick.getBalance()));
 
-                        TextView nameTextView = findViewById(R.id.usernameTextView);
-                        nameTextView.setText(apiService.getCurrentUser().getName());
+                            TextView nameTextView = findViewById(R.id.usernameTextView);
+                            nameTextView.setText(apiService.getCurrentUser().getName());
+                        }
                     });
                 }
         ).start();

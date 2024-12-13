@@ -12,6 +12,7 @@ import by.bsu.chgkfantasyclient.entity.Pick;
 import by.bsu.chgkfantasyclient.entity.Player;
 import by.bsu.chgkfantasyclient.entity.Team;
 import by.bsu.chgkfantasyclient.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -65,7 +66,7 @@ public class ApiService {
         }
     }
 
-    public LoginResult login(String username, String password) {
+    public ApiCallResult<User> login(String username, String password) {
         try {
             JSONObject jsonObject = new JSONObject()
                     .put("login", username)
@@ -76,10 +77,10 @@ public class ApiService {
                     .build();
             try (Response response = httpClient.newCall(req).execute()) {
                 if (response.code() == 401) {
-                    return LoginResult.badCredentials();
+                    return ApiCallResult.error(401, "unauthorized");
                 }
                 if (response.code() != 200) {
-                    return LoginResult.error();
+                    return ApiCallResult.error(response.code(), "invalid code: " + response.code());
                 }
                 sessionKey = response.header(response.header("x-csrf-token", "_csrf"));
                 JSONObject userJson = new JSONObject(response.body().string());
@@ -94,10 +95,10 @@ public class ApiService {
                         userJson.getString("name"),
                         pick_ids
                 );
-                return new LoginResult(currentUser);
+                return ApiCallResult.success(currentUser);
             }
         } catch (IOException | JSONException e) {
-            return new LoginResult(LoginResult.Status.ERROR);
+            return ApiCallResult.error(e.getMessage());
         }
     }
 
@@ -108,40 +109,41 @@ public class ApiService {
                 .url(API_HOST + path);
     }
 
-    public User updateUser() {
+    public ApiCallResult<User> updateUser() {
         long id = currentUser.getId();
         Request request = createAuthenticatedRequest("/user/" + id)
                 .get()
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                JSONObject userJson = new JSONObject(response.body().string());
-                JSONArray jsonArray = userJson.getJSONArray("pick_ids");
-                ArrayList<Long> pick_ids = new ArrayList<>();
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    pick_ids.add(jsonArray.getLong(i));
-                }
-                currentUser = new User(
-                        userJson.getLong("id"),
-                        userJson.getString("username"),
-                        userJson.getString("name"),
-                        pick_ids
-                );
+            if (response.code() != 200) {
+                return ApiCallResult.error(response.code(), "invalid code: " + response.code());
             }
-        } catch (IOException | JSONException ignored) {
-            //TODO handle
+            JSONObject userJson = new JSONObject(response.body().string());
+            JSONArray jsonArray = userJson.getJSONArray("pick_ids");
+            ArrayList<Long> pick_ids = new ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                pick_ids.add(jsonArray.getLong(i));
+            }
+            currentUser = new User(
+                    userJson.getLong("id"),
+                    userJson.getString("username"),
+                    userJson.getString("name"),
+                    pick_ids
+            );
+            return ApiCallResult.success(currentUser);
+        } catch (IOException | JSONException e) {
+            return ApiCallResult.error(e.getMessage());
         }
-        return currentUser;
     }
 
-    public Pick getUserCurrentPick() {
+    public ApiCallResult<Pick> getUserCurrentPick() {
         long id = currentUser.getPickIds().get(0);
         Request request = createAuthenticatedRequest("/pick/" + id)
                 .get()
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.code() != 200) {
-                return null;
+                return ApiCallResult.error(response.code(), "invalid code: " + response.code());
             }
             JSONObject pickJson = new JSONObject(response.body().string());
             JSONArray playersJSON = pickJson.getJSONArray("players");
@@ -154,54 +156,62 @@ public class ApiService {
             for (int i = 0; i < teamsJSON.length(); i++) {
                 teams.add(Team.fromJSON(teamsJSON.getJSONObject(i)));
             }
-            return new Pick(
+            return ApiCallResult.success(new Pick(
                     pickJson.getLong("id"),
                     pickJson.getDouble("balance"),
                     pickJson.getInt("points"),
                     players,
                     teams,
                     pickJson.getLong("user_id")
-            );
+            ));
         } catch (IOException | JSONException e) {
             e.printStackTrace();
-            return null;
+            return ApiCallResult.error(e.getMessage());
         }
     }
 
     @Getter
-    public static class LoginResult {
+    public static class ApiCallResult<T> {
+
+        private final T result;
+        private final Error error;
+
+        ApiCallResult(T result) {
+            this.result = result;
+            this.error = null;
+        }
+
+        ApiCallResult(Error error) {
+            this.result = null;
+            this.error = error;
+        }
+
+        public boolean isSuccessful() {
+            return error == null;
+        }
+
+        public boolean isError() {
+            return error != null;
+        }
+
+        public static <T> ApiCallResult<T> success(T result) {
+            return new ApiCallResult<>(result);
+        }
+
+        public static <T> ApiCallResult<T> error(int code, String message) {
+            return new ApiCallResult<>(new Error(code, message));
+        }
+
+        public static <T> ApiCallResult<T> error(String message) {
+            return new ApiCallResult<>(new Error(1, message));
+        }
+
         @Getter
-        public enum Status {
-            SUCCESS(0),
-            BAD_CREDENTIALS(R.string.bad_credentials),
-            ERROR(R.string.login_error);
-
-            private final int errorStringId;
-
-            Status(int stringId) {
-                errorStringId = stringId;
-            }
+        @AllArgsConstructor
+        public static class Error {
+            private final int code;
+            private final String message;
         }
-
-        private final Status status;
-        private User user;
-
-        LoginResult(Status status) {
-            this.status = status;
-        }
-
-        LoginResult(User user) {
-            this.status = Status.SUCCESS;
-            this.user = user;
-        }
-
-        public static LoginResult badCredentials() {
-            return new LoginResult(Status.BAD_CREDENTIALS);
-        }
-
-        public static LoginResult error() {
-            return new LoginResult(Status.ERROR);
-        }
-
     }
+
 }
