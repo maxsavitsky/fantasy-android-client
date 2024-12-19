@@ -102,6 +102,43 @@ public class ApiService {
         }
     }
 
+    public ApiCallResult<User> register(String username, String name, String password) {
+        try {
+            JSONObject jsonObject = new JSONObject()
+                    .put("login", username)
+                    .put("password", password)
+                    .put("name", name);
+            Request req = new Request.Builder()
+                    .url(API_HOST + "/register")
+                    .post(RequestBody.create(jsonObject.toString(), MediaType.parse("application/json; charset=utf-8")))
+                    .build();
+            try (Response response = httpClient.newCall(req).execute()) {
+                if (response.code() == 401) {
+                    return ApiCallResult.error(401, "unauthorized");
+                }
+                if (response.code() != 200) {
+                    return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+                }
+                sessionKey = response.header(response.header("x-csrf-token", "_csrf"));
+                JSONObject userJson = new JSONObject(response.body().string());
+                JSONArray jsonArray = userJson.getJSONArray("pick_ids");
+                ArrayList<Long> pick_ids = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    pick_ids.add(jsonArray.getLong(i));
+                }
+                currentUser = new User(
+                        userJson.getLong("id"),
+                        userJson.getString("username"),
+                        userJson.getString("name"),
+                        pick_ids
+                );
+                return ApiCallResult.success(currentUser);
+            }
+        } catch (IOException | JSONException e) {
+            return ApiCallResult.error(e.getMessage());
+        }
+    }
+
     public Request.Builder createAuthenticatedRequest(String path) {
         return new Request.Builder()
                 .header("x-csrf-token", "_csrf")

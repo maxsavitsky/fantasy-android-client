@@ -4,25 +4,30 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import by.bsu.chgkfantasyclient.MainActivity;
 import by.bsu.chgkfantasyclient.R;
 import by.bsu.chgkfantasyclient.api.ApiService;
 import by.bsu.chgkfantasyclient.entity.User;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private final ActivityResultLauncher<Intent> registerActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    setResult(result.getResultCode(), result.getData());
+                    finish();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +78,8 @@ public class LoginActivity extends AppCompatActivity {
 
             new Thread(()->authenticate(usernameEditText.getText().toString(), passwordEditText.getText().toString())).start();
         });
+
+        findViewById(R.id.sign_up).setOnClickListener(v -> registerActivityResultLauncher.launch(new Intent(this, RegisterActivity.class)));
     }
 
     private void authenticate(String username, String password) {
