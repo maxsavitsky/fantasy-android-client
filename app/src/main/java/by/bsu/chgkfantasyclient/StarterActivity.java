@@ -54,6 +54,15 @@ public class StarterActivity extends AppCompatActivity {
         EntityRepository.getInstance().addTeam(new Team(3, "team3", 0, 50));
         EntityRepository.getInstance().addTeam(new Team(4, "team4", 0, 0));
 */
+
+        if(getIntent().getBooleanExtra("log_out", false)) {
+            try {
+                getEncryptedPrefs().edit().remove("session_key").commit();
+            } catch (GeneralSecurityException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         new Thread(this::checkSession).start();
     }
 
