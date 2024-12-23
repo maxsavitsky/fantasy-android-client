@@ -20,7 +20,7 @@ public class PickTeamWidget extends AbstractUserPickWidget<Team> {
 
     @Override
     protected int getDefaultImageDrawable() {
-        return R.drawable.user;
+        return R.drawable.users;
     }
 
 }
