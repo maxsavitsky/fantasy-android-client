@@ -5,12 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,14 +39,14 @@ public class PickTeamActivity extends AbstractPickEntityActivity<Team, PickTeamA
     }
 
     @Override
-    protected DataAdapter<TeamDataAdapter.ViewHolder, Team> getAdapter(DataAdapter.Callback<Team> callback) {
-        return new TeamDataAdapter(callback);
+    protected DataAdapter<TeamDataAdapter.ViewHolder, Team> getAdapter(DataAdapter.Callback<Team> callback, double userBalance) {
+        return new TeamDataAdapter(callback, userBalance);
     }
 
     public static class TeamDataAdapter extends AbstractPickEntityActivity.DataAdapter<TeamDataAdapter.ViewHolder, Team> {
 
-        public TeamDataAdapter(Callback<Team> callback) {
-            super(callback);
+        public TeamDataAdapter(Callback<Team> callback, double userBalance) {
+            super(callback, userBalance);
         }
 
         @NonNull

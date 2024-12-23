@@ -6,8 +6,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,7 +46,13 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
     protected final OkHttpClient httpClient = new OkHttpClient();
     protected final ApiService apiService = ApiService.getInstance();
 
+    private double userBalance;
+
     private final DataAdapter.Callback<T> adapterCallback = (position, entity) -> {
+        if (userBalance < entity.getPrice()) {
+            Toast.makeText(this, R.string.not_enough_balance, Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent sourceData = getIntent();
         Intent data = new Intent()
                 .putExtra("id", entity.getId())
@@ -72,6 +78,8 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        userBalance = getIntent().getDoubleExtra("balance", 0);
 
         recyclerView = findViewById(R.id.recycler_view_entities);
         searchView = findViewById(R.id.view_search_entity);
@@ -126,7 +134,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = getAdapter(adapterCallback);
+        adapter = getAdapter(adapterCallback, userBalance);
         recyclerView.setAdapter(adapter);
 
         adapter.update(sourceEntitiesList);
@@ -168,7 +176,7 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
         });
     }
 
-    protected abstract DataAdapter<VH, T> getAdapter(DataAdapter.Callback<T> callback);
+    protected abstract DataAdapter<VH, T> getAdapter(DataAdapter.Callback<T> callback, double userBalance);
 
     protected abstract String getUrlPath();
 
@@ -181,9 +189,11 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
     protected abstract static class DataAdapter<VH extends DataAdapter.ViewHolder, T extends Entity> extends RecyclerView.Adapter<VH> {
 
         private final Callback<T> callback;
+        private final double userBalance;
 
-        public DataAdapter(Callback<T> callback) {
+        public DataAdapter(Callback<T> callback, double userBalance) {
             this.callback = callback;
+            this.userBalance = userBalance;
         }
 
         private List<T> entities = List.of();
@@ -223,8 +233,10 @@ public abstract class AbstractPickEntityActivity<T extends Entity, VH extends Ab
             holder.nameTextView.setText(entity.getName());
             holder.priceTextView.setText(String.format(Locale.ROOT, "%d$", entity.getPrice()));
             holder.pointsTextView.setText(String.format(Locale.ROOT, "%d pts", entity.getPoints()));
-            //TODO: red or green depending on whether it is affordable or not
-            //holder.pointsTextView.setBackgroundColor();
+            if (userBalance < entity.getPrice()) {
+                holder.priceTextView.setBackgroundColor(holder.itemView.getContext().getColor(R.color.background_red));
+                holder.priceTextView.setTextColor(holder.itemView.getContext().getColor(R.color.red));
+            }
 
             holder.itemView.setOnClickListener(v -> callback.onEntityClicked(position, entity));
         }

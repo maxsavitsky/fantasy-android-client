@@ -39,14 +39,14 @@ public class PickPlayerActivity extends AbstractPickEntityActivity<Player, PickP
     }
 
     @Override
-    protected DataAdapter<PlayerDataAdapter.ViewHolder, Player> getAdapter(DataAdapter.Callback<Player> callback) {
-        return new PlayerDataAdapter(callback);
+    protected DataAdapter<PlayerDataAdapter.ViewHolder, Player> getAdapter(DataAdapter.Callback<Player> callback, double userBalance) {
+        return new PlayerDataAdapter(callback, userBalance);
     }
 
     public static class PlayerDataAdapter extends DataAdapter<PlayerDataAdapter.ViewHolder, Player> {
 
-        public PlayerDataAdapter(Callback<Player> callback) {
-            super(callback);
+        public PlayerDataAdapter(Callback<Player> callback, double userBalance) {
+            super(callback, userBalance);
         }
 
         @NonNull
