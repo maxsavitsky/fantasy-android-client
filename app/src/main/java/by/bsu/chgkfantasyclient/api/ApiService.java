@@ -68,19 +68,16 @@ public class ApiService {
 
     public ApiCallResult<User> login(String username, String password) {
         try {
-            JSONObject jsonObject = new JSONObject()
-                    .put("login", username)
-                    .put("password", password);
             Request req = new Request.Builder()
-                    .url(API_HOST + "/login")
-                    .post(RequestBody.create(jsonObject.toString(), MediaType.parse("application/json; charset=utf-8")))
+                    .url(String.format("%s/login?login=%s&&password=%s", API_HOST, username, password))
+                    .post(RequestBody.create(new byte[0], null))
                     .build();
             try (Response response = httpClient.newCall(req).execute()) {
                 if (response.code() == 401) {
                     return ApiCallResult.error(401, "unauthorized");
                 }
                 if (response.code() != 200) {
-                    return ApiCallResult.error(response.code(), "invalid code: " + response.code());
+                    return ApiCallResult.error(response.code(), "login. invalid code: " + response.code());
                 }
                 sessionKey = response.header(response.header("x-csrf-token", "_csrf"));
                 JSONObject userJson = new JSONObject(response.body().string());
@@ -98,6 +95,7 @@ public class ApiService {
                 return ApiCallResult.success(currentUser);
             }
         } catch (IOException | JSONException e) {
+            e.printStackTrace();
             return ApiCallResult.error(e.getMessage());
         }
     }
@@ -135,6 +133,7 @@ public class ApiService {
                 return ApiCallResult.success(currentUser);
             }
         } catch (IOException | JSONException e) {
+            e.printStackTrace();
             return ApiCallResult.error(e.getMessage());
         }
     }
